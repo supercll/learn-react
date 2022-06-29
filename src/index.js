@@ -9,35 +9,30 @@ import ReactDOM from './react-dom'
  * 5.React元素的类型可以是一个字符串 span div p,也可以是一个函数组件类型
  * 6.我们可以给函数组件传递属性，最终他们会传递给props属性对象
  */
-function FunctionComponent(props) {
-  return (
-    <h1 className="title" style={{ color: props.color }}>
-      {props.name}:{props.children}
-    </h1>
-  )
-  //return React.createElement('h1');
-}
+class Counter extends React.Component {
+  constructor(props) {
+    super(props)
+    //组件里可以定义状态对象
+    this.state = { number: 0 }
+  }
+  handleClick = event => {
+    //event.stopPropagation();
+    this.setState({ number: this.state.number + 1 })
+  }
 
-let element = (
-  <FunctionComponent color="orange" name="lc" age={18}>
-    我是函数组件的儿子
-  </FunctionComponent>
-)
-class ClassComponent extends React.Component {
   render() {
     return (
-      <div className="title" style={{ color: 'red' }}>
-        <span>{this.props.name}</span>
-        {this.props.children}
+      <div>
+        <p>{this.props.title}</p>
+        <p>number:{this.state.number}</p>
+        <button onClick={this.handleClick}>+</button>
       </div>
     )
   }
 }
 
-let element2 = <ClassComponent name="hello">world</ClassComponent>
+ReactDOM.render(<Counter title="计数器" />, document.getElementById('root'))
 
-console.log(element2)
-ReactDOM.render(element2, document.getElementById('root'))
 // react核心设计React16
 // React17 fiber
 // React18 优先级调度，并发执行

@@ -62,6 +62,9 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
       for (let attr in styleObj) {
         dom.style[attr] = styleObj[attr]
       }
+    } else if (/^on[A-Z].*/.test(key)) {
+      // 绑定事件
+      dom[key.toLowerCase()] = newProps[key]
     } else {
       //虚拟DOM属性一般来刚好和dom的属性相同的，都是驼峰命名 className
       //dom.className = 'title' setAttribute();
