@@ -18,7 +18,12 @@ function createDOM(vdom) {
   if (type === REACT_TEXT) {
     dom = document.createTextNode(props) //props是个字符串，不是一个DOM节点
   } else if (typeof type === 'function') {
-    return mountFunctionComponent(vdom)
+    if (type.isReactComponent) {
+      return mountClassComponent(vdom)
+    } else {
+      // 挂载函数组件
+      return mountFunctionComponent(vdom)
+    }
   } else {
     //如果type是一个普通字符串的话，说明它是是一个原生组件div span p
     dom = document.createElement(type)
@@ -70,6 +75,14 @@ function mountFunctionComponent(vdom) {
   let renderVdom = FunctionComponent(props)
   if (!renderVdom) return null
   return createDOM(renderVdom)
+}
+
+function mountClassComponent(vdom) {
+  let { type, props } = vdom
+  let classInstance = new type(props) // type为类组件函数类，创建类实例
+  let renderVdom = classInstance.render()
+  let dom = createDOM(renderVdom)
+  return dom
 }
 
 const ReactDOM = {

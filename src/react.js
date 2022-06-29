@@ -1,5 +1,6 @@
 import { wrapToVdom } from './utils'
 import { REACT_ELEMENT } from './constants'
+import { Component } from './Component'
 function createElement(type, config, children) {
   let ref //是后面用来获取真实DOM元素的
   let key //用来实现DOM-DIFF，高效快速进行DOM比较
@@ -30,5 +31,6 @@ function createElement(type, config, children) {
 }
 const React = {
   createElement,
+  Component,
 }
 export default React
