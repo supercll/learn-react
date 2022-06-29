@@ -17,6 +17,8 @@ function createDOM(vdom) {
   let dom //真实DOM元素
   if (type === REACT_TEXT) {
     dom = document.createTextNode(props) //props是个字符串，不是一个DOM节点
+  } else if (typeof type === 'function') {
+    return mountFunctionComponent(vdom)
   } else {
     //如果type是一个普通字符串的话，说明它是是一个原生组件div span p
     dom = document.createElement(type)
@@ -61,6 +63,13 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
       dom[key] = newProps[key]
     }
   }
+}
+
+function mountFunctionComponent(vdom) {
+  let { type: FunctionComponent, props } = vdom
+  let renderVdom = FunctionComponent(props)
+  if (!renderVdom) return null
+  return createDOM(renderVdom)
 }
 
 const ReactDOM = {
