@@ -77,6 +77,7 @@ function mountFunctionComponent(vdom) {
   let { type: FunctionComponent, props } = vdom
   let renderVdom = FunctionComponent(props)
   if (!renderVdom) return null
+  vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
 }
 
@@ -84,8 +85,39 @@ function mountClassComponent(vdom) {
   let { type, props } = vdom
   let classInstance = new type(props) // type为类组件函数类，创建类实例
   let renderVdom = classInstance.render()
+  classInstance.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
   return dom
+}
+
+/**
+ * 从虚拟DOM获取真实DOM
+ * @param {*} vdom 原生的div=>真实DIV节点,函数组件 oldRenderVdom才可能有真实DOM
+ */
+export function findDOM(vdom) {
+  if (!vdom) return null
+  if (vdom.dom) {
+    //当vdom对应原生组件的时候，可以返回真实DOM
+    return vdom.dom
+  } else {
+    //如果是类组件或者说函数组件的话
+    //vdom.type.isReactComponent
+    let renderVdom = vdom.classInstance
+      ? vdom.classInstance.oldRenderVdom
+      : vdom.oldRenderVdom
+    return findDOM(renderVdom)
+  }
+}
+/**
+ * 比较 虚拟DOM，更新真实DOM
+ * @param {*} parentDOM
+ * @param {*} oldVdom
+ * @param {*} newVdom
+ */
+export function compareTowVdom(parentDOM, oldVdom, newVdom) {
+  let oldDOM = findDOM(oldVdom)
+  let newDOM = createDOM(newVdom)
+  parentDOM.replaceChild(newDOM, oldDOM)
 }
 
 const ReactDOM = {

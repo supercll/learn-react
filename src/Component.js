@@ -1,3 +1,5 @@
+import { compareTowVdom, findDOM } from './react-dom'
+
 function shouldUpdate(classInstance, nextState) {
   // 更新state
   classInstance.state = nextState
@@ -48,6 +50,10 @@ export class Component {
     this.updater.addState(partialState)
   }
   forceUpdate() {
-    console.log('forceUpdate: ', this.state)
+    let oldRenderVdom = this.oldRenderVdom
+    let oldDOM = findDOM(oldRenderVdom)
+    let newRenderVdom = this.render()
+    compareTowVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
+    this.oldRenderVdom = newRenderVdom
   }
 }

@@ -7,7 +7,7 @@ let element1 = (
 )
 console.log(element1)
 console.log(JSON.stringify(element1, null, 2))
-debugger
+
 ReactDOM.render(element1, document.getElementById('root'))
 // react核心设计React16
 // React17 fiber
