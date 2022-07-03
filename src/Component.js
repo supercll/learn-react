@@ -6,6 +6,18 @@ function shouldUpdate(classInstance, nextState) {
   classInstance.forceUpdate()
 }
 
+export const updateQueue = {
+  isBathingUpdate: false, //是否是批量更新,如果为true就批量的异步的，如果是false非批量的，同步的
+  updaters: new Set(),
+  batchUpdate() {
+    updateQueue.isBathingUpdate = false
+    for (let updater of updateQueue.updaters) {
+      updater.updateComponent()
+    }
+    updateQueue.updaters.clear()
+  },
+}
+
 class Updater {
   constructor(classInstance) {
     this.classInstance = classInstance
@@ -17,7 +29,13 @@ class Updater {
     this.emitUpdate()
   }
   emitUpdate(nextProps) {
-    this.updateComponent() //触发直接更新
+    debugger
+    if (updateQueue.isBathingUpdate) {
+      //如果是批量
+      updateQueue.updaters.add(this) //就把当前的updater添加到set里保存
+    } else {
+      this.updateComponent() //直接更新
+    }
   }
   updateComponent() {
     const { classInstance, pendingStates } = this

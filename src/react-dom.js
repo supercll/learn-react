@@ -1,4 +1,5 @@
 import { REACT_TEXT } from './constants'
+import { addEvent } from './event'
 /**
  * 需要把虚拟DOM转换成真实DOM并且插入容器中
  * @param {*} vdom 虚拟DOM
@@ -64,7 +65,7 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
       }
     } else if (/^on[A-Z].*/.test(key)) {
       // 绑定事件
-      dom[key.toLowerCase()] = newProps[key]
+      addEvent(dom, key.toLowerCase(), newProps[key])
     } else {
       //虚拟DOM属性一般来刚好和dom的属性相同的，都是驼峰命名 className
       //dom.className = 'title' setAttribute();
