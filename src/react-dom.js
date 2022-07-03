@@ -1,4 +1,4 @@
-import { REACT_TEXT } from './constants'
+import { REACT_FORWARD_REF, REACT_TEXT } from './constants'
 import { addEvent } from './event'
 /**
  * 需要把虚拟DOM转换成真实DOM并且插入容器中
@@ -25,6 +25,8 @@ function createDOM(vdom) {
       // 挂载函数组件
       return mountFunctionComponent(vdom)
     }
+  } else if (type && type.$$typeof === REACT_FORWARD_REF) {
+    return mountForwardComponent(vdom)
   } else {
     //如果type是一个普通字符串的话，说明它是是一个原生组件div span p
     dom = document.createElement(type)
@@ -120,6 +122,18 @@ export function compareTowVdom(parentDOM, oldVdom, newVdom) {
   let oldDOM = findDOM(oldVdom)
   let newDOM = createDOM(newVdom)
   parentDOM.replaceChild(newDOM, oldDOM)
+}
+
+/**
+ *
+ * @param {*} vdom
+ */
+function mountForwardComponent(vdom) {
+  let { type, props, ref } = vdom
+  let renderVdom = type.render(props, ref)
+  if (!renderVdom) return null
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
 }
 
 const ReactDOM = {

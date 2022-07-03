@@ -1,5 +1,5 @@
 import { wrapToVdom } from './utils'
-import { REACT_ELEMENT } from './constants'
+import { REACT_ELEMENT, REACT_FORWARD_REF } from './constants'
 import { Component } from './Component'
 function createElement(type, config, children) {
   let ref //是后面用来获取真实DOM元素的
@@ -32,9 +32,16 @@ function createElement(type, config, children) {
 function createRef() {
   return { current: null }
 }
+function forwardRef(render) {
+  return {
+    $$typeof: REACT_FORWARD_REF,
+    render,
+  }
+}
 const React = {
   createElement,
   Component,
   createRef,
+  forwardRef,
 }
 export default React

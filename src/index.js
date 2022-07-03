@@ -10,35 +10,33 @@ import ReactDOM from './react-dom'
  * 5.React元素的类型可以是一个字符串 span div p,也可以是一个函数组件类型
  * 6.我们可以给函数组件传递属性，最终他们会传递给props属性对象
  */
+function Username(props, ref) {
+  let usernameRef = React.createRef()
+  ref.current = {
+    focus: () => {
+      usernameRef.current.focus()
+    },
+  }
+  return <input ref={usernameRef} />
+}
+const ForwardUsername = React.forwardRef(Username)
+console.log(ForwardUsername)
 class Form extends React.Component {
-  input
   constructor(props) {
     super(props)
-    this.input = React.createRef()
+    this.usernameRef = React.createRef()
   }
   getFocus = () => {
-    this.input.current.getFocus()
+    this.usernameRef.current.focus()
+    //this.usernameRef.current.remove();
   }
   render() {
     return (
-      <>
-        <TextInput ref={this.input} />
+      <div>
+        <ForwardUsername ref={this.usernameRef} />
         <button onClick={this.getFocus}>获得焦点</button>
-      </>
+      </div>
     )
-  }
-}
-class TextInput extends React.Component {
-  input
-  constructor(props) {
-    super(props)
-    this.input = React.createRef()
-  }
-  getFocus = () => {
-    this.input.current.focus()
-  }
-  render() {
-    return <input ref={this.input} />
   }
 }
 ReactDOM.render(<Form />, document.getElementById('root'))
