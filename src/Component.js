@@ -29,7 +29,6 @@ class Updater {
     this.emitUpdate()
   }
   emitUpdate(nextProps) {
-    debugger
     if (updateQueue.isBathingUpdate) {
       //如果是批量
       updateQueue.updaters.add(this) //就把当前的updater添加到set里保存
