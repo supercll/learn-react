@@ -83,11 +83,12 @@ function mountFunctionComponent(vdom) {
 }
 
 function mountClassComponent(vdom) {
-  let { type, props } = vdom
+  let { type, props, ref } = vdom
   let classInstance = new type(props) // type为类组件函数类，创建类实例
   let renderVdom = classInstance.render()
   classInstance.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
+  if (ref) ref.current = classInstance
   return dom
 }
 

@@ -29,8 +29,12 @@ function createElement(type, config, children) {
     props, //这是属性对象 id  className style ....
   }
 }
+function createRef() {
+  return { current: null }
+}
 const React = {
   createElement,
   Component,
+  createRef,
 }
 export default React
