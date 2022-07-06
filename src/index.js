@@ -1,7 +1,5 @@
 import React from './react'
 import ReactDOM from './react-dom'
-//import { createRoot } from 'react-dom/client';
-
 /**
  * 1. 函数组件是一个接收props属性对象，返回React元素的一个函数
  * 2.它的名称必须是大写字母开头  在React里面， 是通过首字母大小写来区分原生组件和内置组件的 div p  Func
@@ -10,36 +8,70 @@ import ReactDOM from './react-dom'
  * 5.React元素的类型可以是一个字符串 span div p,也可以是一个函数组件类型
  * 6.我们可以给函数组件传递属性，最终他们会传递给props属性对象
  */
-function Username(props, ref) {
-  let usernameRef = React.createRef()
-  ref.current = {
-    focus: () => {
-      usernameRef.current.focus()
-    },
+class Counter extends React.Component {
+  static defaultProps = {
+    name: 'lc', //定义默认属性
   }
-  return <input ref={usernameRef} />
-}
-const ForwardUsername = React.forwardRef(Username)
-console.log(ForwardUsername)
-class Form extends React.Component {
   constructor(props) {
     super(props)
-    this.usernameRef = React.createRef()
+    this.state = { number: 0 }
+    console.log('Counter 1.constructor')
   }
-  getFocus = () => {
-    this.usernameRef.current.focus()
-    //this.usernameRef.current.remove();
+  componentWillMount() {
+    console.log('Counter 2.componentWillMount')
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('Counter 5.shouldComponentUpdate')
+    return nextState.number % 2 === 0 //偶数才更新
+  }
+  componentWillUpdate() {
+    console.log('Counter 6.componentWillUpdate')
+  }
+  handleClick = () => {
+    
+    this.setState({ number: this.state.number + 1 })
+  }
+
   render() {
+    console.log('Counter 3.render')
     return (
       <div>
-        <ForwardUsername ref={this.usernameRef} />
-        <button onClick={this.getFocus}>获得焦点</button>
+        <p>{this.state.number}</p>
+        {this.state.number === 4 ? null : (
+          <ChildCounter count={this.state.number} />
+        )}
+        <button onClick={this.handleClick}>+</button>
       </div>
     )
   }
+  componentDidUpdate() {
+    console.log('Counter 7.componentDidUpdate')
+  }
+  componentDidMount() {
+    console.log('Counter 4.componentDidMount')
+  }
 }
-ReactDOM.render(<Form />, document.getElementById('root'))
-//ReactDOM.render 是17写的法
+class ChildCounter extends React.Component {
+  componentWillUnmount() {
+    console.log('ChildCounter 6.componentWillUnmount')
+  }
+  componentWillReceiveProps(newProps) {
+    console.log('ChildCounter 4.componentWillReceiveProps')
+  }
+  componentWillMount() {
+    console.log('ChildCounter 1.componentWillMount')
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('ChildCounter 5.shouldComponentUpdate')
 
-//createRoot(document.getElementById('root')).render(<Counter />);
+    return nextProps.count % 3 === 0
+  }
+  render() {
+    console.log('ChildCounter 2.render')
+    return <div>{this.props.count}</div>
+  }
+  componentDidMount() {
+    console.log('ChildCounter 3.componentDidMount')
+  }
+}
+ReactDOM.render(<Counter />, document.getElementById('root'))

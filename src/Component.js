@@ -2,8 +2,21 @@ import { compareTowVdom, findDOM } from './react-dom'
 
 function shouldUpdate(classInstance, nextState) {
   // 更新state
+  let willUpdate = true
+  // shouldComponentUpdate
+  if (
+    classInstance.shouldComponentUpdate &&
+    !classInstance.shouldComponentUpdate(undefined, nextState)
+  ) {
+    willUpdate = false
+  }
+  if (willUpdate && classInstance.componentWillUpdate) {
+    classInstance.componentWillUpdate()
+  }
+  //不管shouldComponentUpdate返回true还是false,当前组件的state都会更新
   classInstance.state = nextState
-  classInstance.forceUpdate()
+  //只不过当willUpdate为true的时候，才会真正去更新界面
+  if (willUpdate) classInstance.forceUpdate()
 }
 
 export const updateQueue = {
@@ -72,5 +85,8 @@ export class Component {
     let newRenderVdom = this.render()
     compareTowVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
     this.oldRenderVdom = newRenderVdom
+    if (this.componentDidUpdate) {
+      this.componentDidUpdate()
+    }
   }
 }

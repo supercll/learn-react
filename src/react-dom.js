@@ -12,6 +12,7 @@ function mount(vdom, container) {
   let newDOM = createDOM(vdom)
   if (!newDOM) return
   container.appendChild(newDOM)
+  if (newDOM.componentDidMount) newDOM.componentDidMount()
 }
 function createDOM(vdom) {
   let { type, props, ref } = vdom
@@ -87,10 +88,14 @@ function mountFunctionComponent(vdom) {
 function mountClassComponent(vdom) {
   let { type, props, ref } = vdom
   let classInstance = new type(props) // type为类组件函数类，创建类实例
+  vdom.classInstance = classInstance
+  if (ref) ref.current = classInstance
+  if (classInstance.componentWillMount) classInstance.componentWillMount()
   let renderVdom = classInstance.render()
+  if (!renderVdom) return null
   classInstance.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
-  if (ref) ref.current = classInstance
+  if (classInstance.componentDidMount) classInstance.componentDidMount()
   return dom
 }
 
