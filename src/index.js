@@ -28,7 +28,6 @@ class Counter extends React.Component {
     console.log('Counter 6.componentWillUpdate')
   }
   handleClick = () => {
-    
     this.setState({ number: this.state.number + 1 })
   }
 
@@ -41,6 +40,7 @@ class Counter extends React.Component {
           <ChildCounter count={this.state.number} />
         )}
         <button onClick={this.handleClick}>+</button>
+        {null}
       </div>
     )
   }
@@ -64,7 +64,7 @@ class ChildCounter extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     console.log('ChildCounter 5.shouldComponentUpdate')
 
-    return nextProps.count % 3 === 0
+    return true
   }
   render() {
     console.log('ChildCounter 2.render')

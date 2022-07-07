@@ -52,8 +52,10 @@ function createDOM(vdom) {
 // 多个子元素时拆分处理
 function reconcileChildren(children, parentDOM) {
   for (let index = 0; index < children.length; index++) {
-    children[index].mountIndex = index
-    mount(children[index], parentDOM)
+    if (children[index]) {
+      children[index].mountIndex = index
+      mount(children[index], parentDOM)
+    }
   }
 }
 

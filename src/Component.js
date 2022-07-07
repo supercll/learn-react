@@ -6,7 +6,7 @@ function shouldUpdate(classInstance, nextState) {
   // shouldComponentUpdate
   if (
     classInstance.shouldComponentUpdate &&
-    !classInstance.shouldComponentUpdate(undefined, nextState)
+    !classInstance.shouldComponentUpdate({}, nextState)
   ) {
     willUpdate = false
   }
