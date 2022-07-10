@@ -1,17 +1,20 @@
 import { compareTwoVdom, findDOM } from './react-dom'
 
-function shouldUpdate(classInstance, nextState) {
+function shouldUpdate(classInstance, nextProps, nextState) {
   // 更新state
   let willUpdate = true
   // shouldComponentUpdate
   if (
     classInstance.shouldComponentUpdate &&
-    !classInstance.shouldComponentUpdate({}, nextState)
+    !classInstance.shouldComponentUpdate(nextProps, nextState)
   ) {
     willUpdate = false
   }
   if (willUpdate && classInstance.componentWillUpdate) {
     classInstance.componentWillUpdate()
+  }
+  if (nextProps) {
+    classInstance.props = nextProps
   }
   //不管shouldComponentUpdate返回true还是false,当前组件的state都会更新
   classInstance.state = nextState
@@ -42,6 +45,7 @@ class Updater {
     this.emitUpdate()
   }
   emitUpdate(nextProps) {
+    this.nextProps = nextProps
     if (updateQueue.isBathingUpdate) {
       //如果是批量
       updateQueue.updaters.add(this) //就把当前的updater添加到set里保存
@@ -50,10 +54,10 @@ class Updater {
     }
   }
   updateComponent() {
-    const { classInstance, pendingStates } = this
-    if (pendingStates.length > 0) {
+    const { nextProps, classInstance, pendingStates } = this
+    if (nextProps || pendingStates.length > 0) {
       //表示有将要进行的更新
-      shouldUpdate(classInstance, this.getState())
+      shouldUpdate(classInstance, nextProps, this.getState())
     }
   }
   getState() {
@@ -81,12 +85,26 @@ export class Component {
   }
   forceUpdate() {
     let oldRenderVdom = this.oldRenderVdom
-    let oldDOM = findDOM(oldRenderVdom)
-    let newRenderVdom = this.render()
+    //获取老的虚拟DOM获取老的真实DOM
+    let oldDOM = findDOM(oldRenderVdom) //div#counter
+
+    if (this.constructor.getDerivedStateFromProps) {
+      let newState = this.constructor.getDerivedStateFromProps(
+        this.props,
+        this.state,
+      )
+      if (newState) {
+        // 合并state
+        this.state = { ...this.state, ...newState }
+      }
+    }
+    let snapshot =
+      this.getSnapshotBeforeUpdate && this.getSnapshotBeforeUpdate()
+    let newRenderVdom = this.render() //渲染出新的虚拟DOM
     compareTwoVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
     this.oldRenderVdom = newRenderVdom
     if (this.componentDidUpdate) {
-      this.componentDidUpdate()
+      this.componentDidUpdate(this.props, this.state, snapshot)
     }
   }
 }

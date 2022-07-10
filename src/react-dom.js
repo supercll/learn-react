@@ -134,7 +134,7 @@ export function findDOM(vdom) {
  * @param {*} newVdom
  */
 export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
-  debugger
+  
   if (!oldVdom && !newVdom) {
     return null
   } else if (oldVdom && !newVdom) {

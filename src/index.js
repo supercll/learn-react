@@ -1,26 +1,52 @@
 import React from './react'
 import ReactDOM from './react-dom'
-class Counter extends React.Component {
-  constructor() {
-    super()
-    this.state = { list: ['A', 'B', 'C', 'D', 'E', 'F'] }
+class ScrollList extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { messages: [] }
+    this.wrapper = React.createRef()
   }
-  handleClick = () => {
+  addMessage = () => {
     this.setState({
-      list: ['A', 'C', 'E', 'B', 'G'],
+      messages: [`${this.state.messages.length}`, ...this.state.messages],
     })
   }
+  componentDidMount() {
+    this.timer = window.setInterval(() => {
+      this.addMessage()
+    }, 1000)
+  }
+  componentWillUnmount() {
+    window.clearInterval(this.timer)
+  }
+  getSnapshotBeforeUpdate() {
+    return {
+      prevScrollTop: this.wrapper.current.scrollTop, //在DOM更新前向上卷去的高度
+      prevScrollHeight: this.wrapper.current.scrollHeight, //在DOM更新后内容的高度
+    }
+  }
+  componentDidUpdate(
+    prevProps,
+    prevState,
+    { prevScrollTop, prevScrollHeight },
+  ) {
+    this.wrapper.current.scrollTop =
+      prevScrollTop + (this.wrapper.current.scrollHeight - prevScrollHeight)
+  }
   render() {
+    let style = {
+      height: '100px',
+      width: '200px',
+      border: '1px solid red',
+      overflow: 'auto',
+    }
     return (
-      <React.Fragment>
-        <ul>
-          {this.state.list.map(item => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-        <button onClick={this.handleClick}>点击</button>
-      </React.Fragment>
+      <div style={style} ref={this.wrapper}>
+        {this.state.messages.map((message, index) => (
+          <div key={index}>{message}</div>
+        ))}
+      </div>
     )
   }
 }
-ReactDOM.render(<Counter />, document.getElementById('root'))
+ReactDOM.render(<ScrollList />, document.getElementById('root'))
