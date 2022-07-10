@@ -1,4 +1,9 @@
-import { REACT_TEXT, REACT_FRAGMENT } from './utils'
+import {
+  REACT_TEXT,
+  REACT_FRAGMENT,
+  REACT_PROVIDER,
+  REACT_CONTEXT,
+} from './utils'
 import { addEvent } from './event'
 import { REACT_FORWARD_REF } from './element'
 import { MOVE, PLACEMENT, DELETE } from './flags'
@@ -18,7 +23,11 @@ function mount(vdom, container) {
 function createDOM(vdom) {
   let { type, props, ref } = vdom
   let dom //真实DOM元素
-  if (type === REACT_FRAGMENT) {
+  if (type && type.$$typeof === REACT_PROVIDER) {
+    return mountProviderComponent(vdom)
+  } else if (type && type.$$typeof === REACT_CONTEXT) {
+    return mountContextComponent(vdom)
+  } else if (type === REACT_FRAGMENT) {
     dom = document.createDocumentFragment()
   } else if (type && type.$$typeof === REACT_FORWARD_REF) {
     return mountForwardComponent(vdom)
@@ -49,6 +58,22 @@ function createDOM(vdom) {
   vdom.dom = dom
   if (ref) ref.current = dom
   return dom
+}
+
+function mountProviderComponent(vdom) {
+  let { type, props } = vdom
+  let context = type._context
+  context._currentValue = props.value
+  let renderVdom = props.children
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
+}
+function mountContextComponent(vdom) {
+  let { type, props } = vdom
+  let context = type._context
+  let renderVdom = props.children(context._currentValue)
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
 }
 
 function updateProps(dom, oldProps = {}, newProps = {}) {
@@ -82,6 +107,9 @@ function mountFunctionComponent(vdom) {
 function mountClassComponent(vdom) {
   let { type: ClassComponent, props, ref } = vdom
   let classInstance = new ClassComponent(props)
+  if (ClassComponent.contextType) {
+    classInstance.context = ClassComponent.contextType._currentValue
+  }
   vdom.classInstance = classInstance
   if (ref) ref.current = classInstance
   if (classInstance.componentWillMount) classInstance.componentWillMount()
@@ -134,7 +162,6 @@ export function findDOM(vdom) {
  * @param {*} newVdom
  */
 export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
-  
   if (!oldVdom && !newVdom) {
     return null
   } else if (oldVdom && !newVdom) {
@@ -162,7 +189,11 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
   }
 }
 function updateElement(oldVdom, newVdom) {
-  if (oldVdom.type === REACT_FRAGMENT) {
+  if (oldVdom.type.$$typeof === REACT_CONTEXT) {
+    updateContextComponent(oldVdom, newVdom)
+  } else if (oldVdom.type.$$typeof === REACT_PROVIDER) {
+    updateProviderComponent(oldVdom, newVdom)
+  } else if (oldVdom.type === REACT_FRAGMENT) {
     let currentDOM = (newVdom.dom = findDOM(oldVdom))
     updateChildren(currentDOM, oldVdom.props.children, newVdom.props.children)
   } else if (oldVdom.type === REACT_TEXT) {
@@ -183,6 +214,25 @@ function updateElement(oldVdom, newVdom) {
       updateFunctionComponent(oldVdom, newVdom)
     }
   }
+}
+function updateContextComponent(oldVdom, newVdom) {
+  let currentDOM = findDOM(oldVdom)
+  const parentDOM = currentDOM.parentNode
+  const { type, props } = newVdom
+  const context = type._context
+  let renderVdom = props.children(context._currentValue)
+  compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+  newVdom.oldRenderVdom = renderVdom
+}
+function updateProviderComponent(oldVdom, newVdom) {
+  let currentDOM = findDOM(oldVdom)
+  const parentDOM = currentDOM.parentNode
+  const { type, props } = newVdom
+  const context = type._context
+  context._currentValue = props.value
+  let renderVdom = props.children
+  compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+  newVdom.oldRenderVdom = renderVdom
 }
 function updateClassComponent(oldVdom, newVdom) {
   const classInstance = (newVdom.classInstance = oldVdom.classInstance)

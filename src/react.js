@@ -1,5 +1,10 @@
 import { REACT_ELEMENT, REACT_FORWARD_REF } from './element'
-import { wrapToVdom, REACT_FRAGMENT } from './utils'
+import {
+  wrapToVdom,
+  REACT_FRAGMENT,
+  REACT_CONTEXT,
+  REACT_PROVIDER,
+} from './utils'
 import { Component } from './Component'
 function createElement(type, config, children) {
   let ref //是后面用来获取真实DOM元素的
@@ -39,11 +44,24 @@ function forwardRef(render) {
     render,
   }
 }
+function createContext() {
+  const context = { $$typeof: REACT_CONTEXT, _currentValue: undefined }
+  context.Provider = {
+    $$typeof: REACT_PROVIDER,
+    _context: context,
+  }
+  context.Consumer = {
+    $$typeof: REACT_CONTEXT,
+    _context: context,
+  }
+  return context
+}
 const React = {
   createElement,
   Component,
   createRef,
   forwardRef,
   Fragment: REACT_FRAGMENT,
+  createContext,
 }
 export default React
