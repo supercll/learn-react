@@ -1,4 +1,4 @@
-import { compareTowVdom, findDOM } from './react-dom'
+import { compareTwoVdom, findDOM } from './react-dom'
 
 function shouldUpdate(classInstance, nextState) {
   // 更新state
@@ -83,7 +83,7 @@ export class Component {
     let oldRenderVdom = this.oldRenderVdom
     let oldDOM = findDOM(oldRenderVdom)
     let newRenderVdom = this.render()
-    compareTowVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
+    compareTwoVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom)
     this.oldRenderVdom = newRenderVdom
     if (this.componentDidUpdate) {
       this.componentDidUpdate()
