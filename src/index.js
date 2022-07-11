@@ -1,33 +1,47 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-
-const loading = message => OldComponent => {
-  return class extends React.Component {
-    render() {
-      const state = {
-        show() {
-          console.log('show', message)
-        },
-        hide() {
-          console.log('hide', message)
-        },
-      }
-      return <OldComponent {...this.props} {...state} />
-    }
+import React from './react'
+import ReactDOM from './react-dom'
+//反向继承 假如说这个Button是别人写的，不能直接改源码
+class Button extends React.Component {
+  state = { name: 'Button' }
+  componentDidMount() {
+    console.log('Button componentDidMount')
   }
-}
-
-class Counter extends React.Component {
+  componentWillMount() {
+    console.log('Button componentWillMount')
+  }
   render() {
+    console.log('Button render')
     return (
-      <div>
-        <p>Counter</p>
-        <button onClick={this.props.show}>show</button>
-        <button onClick={this.props.hide}>hide</button>
-      </div>
+      <button name={this.state.name} title={this.props.title}>
+        <span>button:{this.state.number}</span>
+      </button>
     )
   }
 }
-const LoadingCounter = loading('消息')(Counter)
-
-ReactDOM.render(<LoadingCounter />, document.getElementById('root'))
+const counterWrapper = OldComponent => {
+  return class NewButton extends OldComponent {
+    state = { number: 0 }
+    componentDidMount() {
+      console.log('NewButton componentDidMount')
+      super.componentDidMount()
+    }
+    componentWillMount() {
+      console.log('NewButton componentWillMount')
+      super.componentWillMount()
+    }
+    handleClick = () => {
+      this.setState({ number: this.state.number + 1 })
+    }
+    render() {
+      console.log('NewButton render')
+      let element = super.render()
+      let newProps = {
+        ...element.props,
+        onClick: this.handleClick,
+      }
+      return React.cloneElement(element, newProps)
+    }
+  }
+}
+const CounterButton = counterWrapper(Button)
+ReactDOM.render(<CounterButton title="按钮" />, document.getElementById('root'))

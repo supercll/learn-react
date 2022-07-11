@@ -56,6 +56,16 @@ function createContext() {
   }
   return context
 }
+
+function cloneElement(element, newProps, ...newChildren) {
+  let children = element.props && element.props.children
+  if (newChildren.length > 0) {
+    children = newChildren.map(wrapToVdom)
+  }
+  if (children.length == 1) children = children[0]
+  let props = { ...element.props, ...newProps, children }
+  return { ...element, props }
+}
 const React = {
   createElement,
   Component,
@@ -63,5 +73,6 @@ const React = {
   forwardRef,
   Fragment: REACT_FRAGMENT,
   createContext,
+  cloneElement,
 }
 export default React
