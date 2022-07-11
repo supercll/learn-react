@@ -1,80 +1,33 @@
-import React from './react'
-import ReactDOM from './react-dom'
-const ThemeContext = React.createContext() //{Provider,Consumer}
-console.log(ThemeContext)
-const baseStyle = { margin: '5px', padding: '5px' }
-function Title() {
-  return (
-    <ThemeContext.Consumer>
-      {value => (
-        <div style={{ ...baseStyle, border: `5px solid ${value.color}` }}>
-          Title
-        </div>
-      )}
-    </ThemeContext.Consumer>
-  )
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+const loading = message => OldComponent => {
+  return class extends React.Component {
+    render() {
+      const state = {
+        show() {
+          console.log('show', message)
+        },
+        hide() {
+          console.log('hide', message)
+        },
+      }
+      return <OldComponent {...this.props} {...state} />
+    }
+  }
 }
-class Header extends React.Component {
-  static contextType = ThemeContext
+
+class Counter extends React.Component {
   render() {
     return (
-      <div style={{ ...baseStyle, border: `5px solid ${this.context.color}` }}>
-        Header
-        <Title />
+      <div>
+        <p>Counter</p>
+        <button onClick={this.props.show}>show</button>
+        <button onClick={this.props.hide}>hide</button>
       </div>
     )
   }
 }
-function Content() {
-  return (
-    <ThemeContext.Consumer>
-      {value => (
-        <div style={{ ...baseStyle, border: `5px solid ${value.color}` }}>
-          Content
-          <button onClick={() => value.changeColor('red')}>变红</button>
-          <button onClick={() => value.changeColor('green')}>变绿</button>
-        </div>
-      )}
-    </ThemeContext.Consumer>
-  )
-}
-class Main extends React.Component {
-  static contextType = ThemeContext
-  render() {
-    return (
-      <div style={{ ...baseStyle, border: `5px solid ${this.context.color}` }}>
-        Main
-        <Content />
-      </div>
-    )
-  }
-}
-class Page extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { color: 'black' }
-  }
-  changeColor = color => {
-    debugger
-    this.setState({ color })
-  }
-  render() {
-    const value = { color: this.state.color, changeColor: this.changeColor }
-    //React.creteElement(ThemeContext.Provider);=>{type:ThemeContext.Provider}=vdom
-    return (
-      <ThemeContext.Provider value={value}>
-        <div
-          style={{
-            ...baseStyle,
-            width: '250px',
-            border: `5px solid ${this.state.color}`,
-          }}
-        >
-          <Header />
-          <Main />
-        </div>
-      </ThemeContext.Provider>
-    )
-  }
-}
-ReactDOM.render(<Page />, document.getElementById('root'))
+const LoadingCounter = loading('消息')(Counter)
+
+ReactDOM.render(<LoadingCounter />, document.getElementById('root'))
