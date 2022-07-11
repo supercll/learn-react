@@ -4,6 +4,8 @@ import {
   REACT_FRAGMENT,
   REACT_CONTEXT,
   REACT_PROVIDER,
+  shallowEqual,
+  REACT_MEMO,
 } from './utils'
 import { Component } from './Component'
 function createElement(type, config, children) {
@@ -56,7 +58,6 @@ function createContext() {
   }
   return context
 }
-
 function cloneElement(element, newProps, ...newChildren) {
   let children = element.props && element.props.children
   if (newChildren.length > 0) {
@@ -66,6 +67,27 @@ function cloneElement(element, newProps, ...newChildren) {
   let props = { ...element.props, ...newProps, children }
   return { ...element, props }
 }
+class PureComponent extends Component {
+  shouldComponentUpdate(newProps, nextState) {
+    return (
+      !shallowEqual(this.props, newProps) ||
+      !shallowEqual(this.state, nextState)
+    )
+  }
+}
+/**
+ *
+ * @param {*} type 待包装的函数组件
+ * @param {*} compare 比较的方法
+ * @returns
+ */
+function memo(type, compare = shallowEqual) {
+  return {
+    $$typeof: REACT_MEMO,
+    type,
+    compare,
+  }
+}
 const React = {
   createElement,
   Component,
@@ -74,5 +96,7 @@ const React = {
   Fragment: REACT_FRAGMENT,
   createContext,
   cloneElement,
+  PureComponent,
+  memo,
 }
 export default React

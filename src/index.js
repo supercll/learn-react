@@ -1,47 +1,33 @@
 import React from './react'
 import ReactDOM from './react-dom'
-//反向继承 假如说这个Button是别人写的，不能直接改源码
-class Button extends React.Component {
-  state = { name: 'Button' }
-  componentDidMount() {
-    console.log('Button componentDidMount')
+class ClassComponent extends React.PureComponent {
+  render() {
+    console.log('ClassComponent render')
+    return <div>ClassComponent:{this.props.number}</div>
   }
-  componentWillMount() {
-    console.log('Button componentWillMount')
+}
+function FunctionComponent(props) {
+  console.log('FunctionComponent render')
+  return <div>FunctionComponent:{props.number}</div>
+}
+const MemoFunctionComponent = React.memo(FunctionComponent)
+console.log(MemoFunctionComponent)
+class App extends React.Component {
+  state = { number: 0 }
+  amountRef = React.createRef()
+  handleClick = () => {
+    let nextNumber = this.state.number + parseInt(this.amountRef.current.value)
+    this.setState({ number: nextNumber })
   }
   render() {
-    console.log('Button render')
     return (
-      <button name={this.state.name} title={this.props.title}>
-        <span>button:{this.state.number}</span>
-      </button>
+      <div>
+        <ClassComponent number={this.state.number} />
+        <MemoFunctionComponent number={this.state.number} />
+        <input ref={this.amountRef} />
+        <button onClick={this.handleClick}>+</button>
+      </div>
     )
   }
 }
-const counterWrapper = OldComponent => {
-  return class NewButton extends OldComponent {
-    state = { number: 0 }
-    componentDidMount() {
-      console.log('NewButton componentDidMount')
-      super.componentDidMount()
-    }
-    componentWillMount() {
-      console.log('NewButton componentWillMount')
-      super.componentWillMount()
-    }
-    handleClick = () => {
-      this.setState({ number: this.state.number + 1 })
-    }
-    render() {
-      console.log('NewButton render')
-      let element = super.render()
-      let newProps = {
-        ...element.props,
-        onClick: this.handleClick,
-      }
-      return React.cloneElement(element, newProps)
-    }
-  }
-}
-const CounterButton = counterWrapper(Button)
-ReactDOM.render(<CounterButton title="按钮" />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'))

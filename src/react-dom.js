@@ -3,6 +3,7 @@ import {
   REACT_FRAGMENT,
   REACT_PROVIDER,
   REACT_CONTEXT,
+  REACT_MEMO,
 } from './utils'
 import { addEvent } from './event'
 import { REACT_FORWARD_REF } from './element'
@@ -23,7 +24,9 @@ function mount(vdom, container) {
 function createDOM(vdom) {
   let { type, props, ref } = vdom
   let dom //真实DOM元素
-  if (type && type.$$typeof === REACT_PROVIDER) {
+  if (type && type.$$typeof === REACT_MEMO) {
+    return mountMemoComponent(vdom)
+  } else if (type && type.$$typeof === REACT_PROVIDER) {
     return mountProviderComponent(vdom)
   } else if (type && type.$$typeof === REACT_CONTEXT) {
     return mountContextComponent(vdom)
@@ -59,7 +62,16 @@ function createDOM(vdom) {
   if (ref) ref.current = dom
   return dom
 }
-
+function mountMemoComponent(vdom) {
+  let {
+    type: { type: FunctionComponent },
+    props,
+  } = vdom
+  let renderVdom = FunctionComponent(props)
+  vdom.prevProps = props //缓存老属性   挂载的时候是一样的
+  vdom.oldRenderVdom = renderVdom
+  return createDOM(renderVdom)
+}
 function mountProviderComponent(vdom) {
   let { type, props } = vdom
   let context = type._context
@@ -189,7 +201,9 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
   }
 }
 function updateElement(oldVdom, newVdom) {
-  if (oldVdom.type.$$typeof === REACT_CONTEXT) {
+  if (oldVdom.type.$$typeof === REACT_MEMO) {
+    updateMemoComponent(oldVdom, newVdom)
+  } else if (oldVdom.type.$$typeof === REACT_CONTEXT) {
     updateContextComponent(oldVdom, newVdom)
   } else if (oldVdom.type.$$typeof === REACT_PROVIDER) {
     updateProviderComponent(oldVdom, newVdom)
@@ -213,6 +227,24 @@ function updateElement(oldVdom, newVdom) {
     } else {
       updateFunctionComponent(oldVdom, newVdom)
     }
+  }
+}
+function updateMemoComponent(oldVdom, newVdom) {
+  let { type } = oldVdom
+  // console.log(
+  //   oldVdom.props,
+  //   oldVdom.prevProps,
+  //   oldVdom.props == oldVdom.prevProps,
+  // )
+  if (!type.compare(oldVdom.props, newVdom.props)) {
+    const oldDOM = findDOM(oldVdom)
+    const parentDOM = oldDOM.parentNode
+    const { type, props } = newVdom
+    let renderVdom = type.type(props)
+    compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom)
+    newVdom.oldRenderVdom = renderVdom
+  } else {
+    newVdom.oldRenderVdom = oldVdom.oldRenderVdom
   }
 }
 function updateContextComponent(oldVdom, newVdom) {
@@ -251,24 +283,27 @@ function updateFunctionComponent(oldVdom, newVdom) {
   newVdom.oldRenderVdom = newRenderVdom
 }
 function updateChildren(parentDOM, oldVChildren, newVChildren) {
-  oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]
-  newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren]
-
+  oldVChildren = (
+    Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]
+  ).filter(Boolean)
+  newVChildren = (
+    Array.isArray(newVChildren) ? newVChildren : [newVChildren]
+  ).filter(Boolean)
   let lastPlacedIndex = -1 //上一次不需要移动的老节点的挂载索引
-  let keyedOldMap = {} // 设置老结点索引map
+  let keyedOldMap = {}
   oldVChildren.forEach((oldVChild, index) => {
-    let oldKey = oldVChild.key ? oldVChild.key : index
+    let oldKey = oldVChild && oldVChild.key ? oldVChild.key : index
     keyedOldMap[oldKey] = oldVChild
   })
   let patch = []
   newVChildren.forEach((newVChild, index) => {
     newVChild.mountIndex = index //直接重置为新的挂载索引
     let newKey = newVChild.key ? newVChild.key : index
-    let oldVChild = keyedOldMap[newKey] // 通过新dom的key找到老dom结点
+    let oldVChild = keyedOldMap[newKey]
     //说明找到了此key对应的老节节点
     if (oldVChild) {
-      updateElement(oldVChild, newVChild) //递归更新虚拟DOM
-
+      //说明找到了可以复用老节点，就可以进行深度比较 了
+      updateElement(oldVChild, newVChild) //更新
       if (oldVChild.mountIndex < lastPlacedIndex) {
         // 如果当前老结点的挂载结点小于上一个不需要移动的挂载结点，说明这个老的dom结点应该插入在这之前
         patch.push({
@@ -289,7 +324,7 @@ function updateChildren(parentDOM, oldVChildren, newVChildren) {
       })
     }
   })
-  console.log(patch)
+
   //获取需要移动的节点
   let moveVChild = patch
     .filter(action => action.type === MOVE)
