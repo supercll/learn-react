@@ -39,19 +39,47 @@ function mount(vdom, container) {
   container.appendChild(newDOM)
 }
 
+export function useReducer(reducer, initialState) {
+  const currentIndex = hookIndex
+
+  hookStates[currentIndex] =
+    hookStates[currentIndex] ||
+    (typeof initialState === 'function' ? initialState() : initialState)
+  function dispatch(action) {
+    //获取老状态
+    let oldState = hookStates[currentIndex]
+    if (typeof reducer === 'function') {
+      let newState = reducer(oldState, action)
+      hookStates[currentIndex] = newState
+    } else {
+      // useState逻辑
+      let newState = typeof action === 'function' ? action(oldState) : action
+      hookStates[currentIndex] = newState
+    }
+    scheduleUpdate()
+  }
+  return [hookStates[hookIndex++], dispatch]
+}
+
 /**
  * 在函数组件中使用状态
  * @param {*} initialState 初始状态
  * @returns
  */
 export function useState(initialState) {
-  hookStates[hookIndex] = hookStates[hookIndex] || initialState
-  const currentIndex = hookIndex //在函数内部声明一个变量，缓存当前的索引
-  function setState(newState) {
-    hookStates[currentIndex] = newState
-    scheduleUpdate()
-  }
-  return [hookStates[hookIndex++], setState]
+  return useReducer(null, initialState)
+  // const currentIndex = hookIndex //在函数内部声明一个变量，缓存当前的索引
+
+  // hookStates[currentIndex] =
+  //   hookStates[currentIndex] ||
+  //   (typeof initialState === 'function' ? initialState() : initialState)
+  // function setState(action) {
+  //   let newState =
+  //     typeof action === 'function' ? action(hookStates[currentIndex]) : action
+  //   hookStates[currentIndex] = newState
+  //   scheduleUpdate()
+  // }
+  // return [hookStates[hookIndex++], setState]
 }
 export function useMemo(factory, deps) {
   // 后面再渲染的时候

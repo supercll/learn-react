@@ -1,27 +1,42 @@
 import React from './react'
 import ReactDOM from './react-dom'
-function Child({ data, handleClick }) {
-  console.log('Child render')
-  return <button onClick={handleClick}>{data.number}</button>
-}
-//两个条件都要满足，1.属性不变不重新render
-const MemoChild = React.memo(Child)
+// function reducer(state = { number: 0 }, action) {
+//   switch (action.type) {
+//     case 'ADD':
+//       return { number: state.number + 1 }
+//     case 'MINUS':
+//       return { number: state.number - 1 }
+//     default:
+//       return state
+//   }
+// }
+// function App() {
+//   const [state, dispatch] = React.useReducer(reducer, { number: 0 })
+//   return (
+//     <div>
+//       <p> Counter:{state.number}</p>
+//       <button onClick={() => dispatch({ type: 'ADD' })}>+</button>
+//       <button onClick={() => dispatch({ type: 'MINUS' })}>-</button>
+//     </div>
+//   )
+// }
 function App() {
-  console.log('App render')
-  const [name, setName] = React.useState('lc')
-  const [number, setNumber] = React.useState(0)
-  //第2个条就是属性不变，属性变了就重新render
-  let data = React.useMemo(() => ({ number }), [number])
-  // let handleClick = () => setNumber(number + 1)
-  let handleClick = React.useCallback(() => setNumber(number + 1), [number])
+  const [number, setNumber] = React.useState(() => 0)
+  const handleClick = () => {
+    setTimeout(() => {
+      setNumber(number + 1)
+    }, 1000)
+  }
+  const handleClickDelay = () => {
+    setTimeout(() => {
+      setNumber(number => number + 1)
+    }, 2000)
+  }
   return (
     <div>
-      <input
-        type="text"
-        value={name}
-        onChange={event => setName(event.target.value)}
-      />
-      <MemoChild data={data} handleClick={handleClick} />
+      <p>{number}</p>
+      <button onClick={handleClick}>handleClick</button>
+      <button onClick={handleClickDelay}>handleClickDelay</button>
     </div>
   )
 }
