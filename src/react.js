@@ -8,6 +8,7 @@ import {
   REACT_MEMO,
 } from './utils'
 import { Component } from './Component'
+import * as hooks from './react-dom'
 function createElement(type, config, children) {
   let ref //是后面用来获取真实DOM元素的
   let key //用来实现DOM-DIFF，高效快速进行DOM比较
@@ -98,5 +99,6 @@ const React = {
   cloneElement,
   PureComponent,
   memo,
+  ...hooks,
 }
 export default React

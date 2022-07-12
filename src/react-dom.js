@@ -13,8 +13,25 @@ import { MOVE, PLACEMENT, DELETE } from './flags'
  * @param {*} vdom 虚拟DOM
  * @param {*} container 容器
  */
+
+let hookStates = [] //存放状态的数组
+let hookIndex = 0 //存放的索引值
+let scheduleUpdate
+let scheduleUpdated = false //尚未调度更新
 function render(vdom, container) {
   mount(vdom, container)
+  scheduleUpdate = () => {
+    //React每次更新都是从根节点开始更新
+    if (!scheduleUpdated) {
+      scheduleUpdated = true
+      queueMicrotask(() => {
+        scheduleUpdated = false
+        console.log('scheduleUpdate')
+        hookIndex = 0
+        compareTwoVdom(container, vdom, vdom)
+      })
+    }
+  }
 }
 function mount(vdom, container) {
   let newDOM = createDOM(vdom)
@@ -22,6 +39,20 @@ function mount(vdom, container) {
   container.appendChild(newDOM)
 }
 
+/**
+ * 在函数组件中使用状态
+ * @param {*} initialState 初始状态
+ * @returns
+ */
+export function useState(initialState) {
+  hookStates[hookIndex] = hookStates[hookIndex] || initialState
+  const currentIndex = hookIndex //在函数内部声明一个变量，缓存当前的索引
+  function setState(newState) {
+    hookStates[currentIndex] = newState
+    scheduleUpdate()
+  }
+  return [hookStates[hookIndex++], setState]
+}
 function createDOM(vdom) {
   let { type, props, ref } = vdom
   let dom //真实DOM元素
