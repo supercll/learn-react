@@ -53,6 +53,44 @@ export function useState(initialState) {
   }
   return [hookStates[hookIndex++], setState]
 }
+export function useMemo(factory, deps) {
+  // 后面再渲染的时候
+  if (hookStates[hookIndex]) {
+    let [lastMemo, lastDeps] = hookStates[hookIndex]
+    let same = deps.every((item, index) => item === lastDeps[index])
+    if (same) {
+      hookIndex++
+      return lastMemo
+    } else {
+      let newMemo = factory()
+      hookStates[hookIndex++] = [newMemo, deps]
+      return newMemo
+    }
+  } else {
+    //第一次渲染的时候
+    let newMemo = factory()
+    hookStates[hookIndex++] = [newMemo, deps]
+    return newMemo
+  }
+}
+export function useCallback(callback, deps) {
+  // 后面再渲染的时候
+  if (hookStates[hookIndex]) {
+    let [lastCallback, lastDeps] = hookStates[hookIndex]
+    let same = deps.every((item, index) => item === lastDeps[index])
+    if (same) {
+      hookIndex++
+      return lastCallback
+    } else {
+      hookStates[hookIndex++] = [callback, deps]
+      return callback
+    }
+  } else {
+    //第一次渲染的时候
+    hookStates[hookIndex++] = [callback, deps]
+    return callback
+  }
+}
 function createDOM(vdom) {
   let { type, props, ref } = vdom
   let dom //真实DOM元素
