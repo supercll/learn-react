@@ -18,6 +18,7 @@ function render(vdom, container) {
 }
 function mount(vdom, container) {
   let newDOM = createDOM(vdom)
+  if (!newDOM) return
   container.appendChild(newDOM)
 }
 
@@ -68,6 +69,7 @@ function mountMemoComponent(vdom) {
     props,
   } = vdom
   let renderVdom = FunctionComponent(props)
+  if (!renderVdom) return null
   vdom.prevProps = props //缓存老属性   挂载的时候是一样的
   vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
@@ -77,6 +79,7 @@ function mountProviderComponent(vdom) {
   let context = type._context
   context._currentValue = props.value
   let renderVdom = props.children
+  if (!renderVdom) return null
   vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
 }
@@ -84,6 +87,7 @@ function mountContextComponent(vdom) {
   let { type, props } = vdom
   let context = type._context
   let renderVdom = props.children(context._currentValue)
+  if (!renderVdom) return null
   vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
 }
@@ -111,7 +115,9 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
 function mountFunctionComponent(vdom) {
   let { type: FunctionComponent, props } = vdom
   let renderVdom = FunctionComponent(props)
+  if (!renderVdom) return null
   //先缓存一次渲染出来的虚拟DOM，放置在虚拟DOM上
+
   vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
 }
@@ -119,6 +125,7 @@ function mountFunctionComponent(vdom) {
 function mountClassComponent(vdom) {
   let { type: ClassComponent, props, ref } = vdom
   let classInstance = new ClassComponent(props)
+
   if (ClassComponent.contextType) {
     classInstance.context = ClassComponent.contextType._currentValue
   }
@@ -126,6 +133,7 @@ function mountClassComponent(vdom) {
   if (ref) ref.current = classInstance
   if (classInstance.componentWillMount) classInstance.componentWillMount()
   let renderVdom = classInstance.render()
+  if (!renderVdom) return null
   //先缓存一次渲染出来的虚拟DOM，放置在组件实例上
   classInstance.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
@@ -139,6 +147,7 @@ function mountClassComponent(vdom) {
 function mountForwardComponent(vdom) {
   let { type, props, ref } = vdom
   let renderVdom = type.render(props, ref)
+  if (!renderVdom) return null
   vdom.oldRenderVdom = renderVdom
   return createDOM(renderVdom)
 }
@@ -378,5 +387,6 @@ function unmountVdom(vdom) {
 }
 const ReactDOM = {
   render,
+  createPortal: render,
 }
 export default ReactDOM
