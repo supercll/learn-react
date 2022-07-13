@@ -1,43 +1,26 @@
-import React from './react'
-import ReactDOM from './react-dom'
-// function reducer(state = { number: 0 }, action) {
-//   switch (action.type) {
-//     case 'ADD':
-//       return { number: state.number + 1 }
-//     case 'MINUS':
-//       return { number: state.number - 1 }
-//     default:
-//       return state
-//   }
-// }
-// function App() {
-//   const [state, dispatch] = React.useReducer(reducer, { number: 0 })
-//   return (
-//     <div>
-//       <p> Counter:{state.number}</p>
-//       <button onClick={() => dispatch({ type: 'ADD' })}>+</button>
-//       <button onClick={() => dispatch({ type: 'MINUS' })}>-</button>
-//     </div>
-//   )
-// }
-function App() {
-  const [number, setNumber] = React.useState(() => 0)
+import React from 'react'
+import ReactDOM from 'react-dom'
+function Counter() {
+  const valueRef = React.useRef()
+  const [state, setState] = React.useState(0)
   const handleClick = () => {
-    setTimeout(() => {
-      setNumber(number + 1)
-    }, 1000)
+    let newValue = state + 1
+    valueRef.current = newValue
+    setState(newValue)
+    getNewValue()
   }
-  const handleClickDelay = () => {
-    setTimeout(() => {
-      setNumber(number => number + 1)
-    }, 2000)
+  const getNewValue = () => {
+    console.log(valueRef.current)
   }
   return (
     <div>
-      <p>{number}</p>
-      <button onClick={handleClick}>handleClick</button>
-      <button onClick={handleClickDelay}>handleClickDelay</button>
+      <p>{state}</p>
+      <button onClick={handleClick}>+</button>
+      <button onClick={getNewValue}>获取最新的状态</button>
     </div>
   )
 }
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<Counter />, document.getElementById('root'))
+/**
+ * 如何获取 最新的state
+ */

@@ -81,6 +81,11 @@ export function useState(initialState) {
   // }
   // return [hookStates[hookIndex++], setState]
 }
+
+export function useRef(initialValue) {
+  hookStates[hookIndex] = hookStates[hookIndex] || { current: initialValue }
+  return hookStates[hookIndex++]
+}
 export function useMemo(factory, deps) {
   // 后面再渲染的时候
   if (hookStates[hookIndex]) {
