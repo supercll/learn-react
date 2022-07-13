@@ -89,6 +89,9 @@ function memo(type, compare = shallowEqual) {
     compare,
   }
 }
+function useContext(context) {
+  return context._currentValue
+}
 const React = {
   createElement,
   Component,
@@ -99,6 +102,7 @@ const React = {
   cloneElement,
   PureComponent,
   memo,
+  useContext,
   ...hooks,
 }
 export default React
