@@ -81,7 +81,50 @@ export function useState(initialState) {
   // }
   // return [hookStates[hookIndex++], setState]
 }
-
+export function useEffect(callback, deps) {
+  const currentIndex = hookIndex
+  if (hookStates[hookIndex]) {
+    const [destroy, lastDeps] = hookStates[hookIndex]
+    let same = deps && deps.every((item, index) => item === lastDeps[index])
+    if (same) {
+      hookIndex++
+    } else {
+      setTimeout(() => {
+        destroy && destroy()
+        hookStates[currentIndex] = [callback(), deps]
+      })
+      hookIndex++
+    }
+  } else {
+    setTimeout(() => {
+      const destroy = callback()
+      hookStates[currentIndex] = [destroy, deps]
+    })
+    hookIndex++
+  }
+}
+export function useLayoutEffect(callback, deps) {
+  const currentIndex = hookIndex
+  if (hookStates[hookIndex]) {
+    const [destroy, lastDeps] = hookStates[hookIndex]
+    let same = deps && deps.every((item, index) => item === lastDeps[index])
+    if (same) {
+      hookIndex++
+    } else {
+      queueMicrotask(() => {
+        destroy && destroy()
+        hookStates[currentIndex] = [callback(), deps]
+      })
+      hookIndex++
+    }
+  } else {
+    queueMicrotask(() => {
+      const destroy = callback()
+      hookStates[currentIndex] = [destroy, deps]
+    })
+    hookIndex++
+  }
+}
 export function useRef(initialValue) {
   hookStates[hookIndex] = hookStates[hookIndex] || { current: initialValue }
   return hookStates[hookIndex++]

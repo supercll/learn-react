@@ -1,26 +1,17 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import React from './react'
+import ReactDOM from './react-dom'
 function Counter() {
-  const valueRef = React.useRef()
-  const [state, setState] = React.useState(0)
-  const handleClick = () => {
-    let newValue = state + 1
-    valueRef.current = newValue
-    setState(newValue)
-    getNewValue()
-  }
-  const getNewValue = () => {
-    console.log(valueRef.current)
-  }
-  return (
-    <div>
-      <p>{state}</p>
-      <button onClick={handleClick}>+</button>
-      <button onClick={getNewValue}>获取最新的状态</button>
-    </div>
-  )
+  const [number, setNumber] = React.useState(0)
+  React.useEffect(() => {
+    console.log('开启一个定时器')
+    const timer = setInterval(() => {
+      setNumber(number => number + 1)
+    }, 1000)
+    // return () => {
+    //   console.log('销毁老的定时器')
+    //   clearInterval(timer)
+    // }
+  }, [])
+  return <p>{number}</p>
 }
 ReactDOM.render(<Counter />, document.getElementById('root'))
-/**
- * 如何获取 最新的state
- */
